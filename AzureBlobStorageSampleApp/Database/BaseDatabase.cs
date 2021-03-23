@@ -20,9 +20,12 @@ namespace AzureBlobStorageSampleApp
 		protected static async Task<TReturn> ExecuteDatabaseFunction<TDataType, TReturn>(Func<SQLiteAsyncConnection, Task<TReturn>> action, int numRetries = 12)
 		{
 			if (!DatabaseConnection.TableMappings.Any(x => x.MappedType == typeof(TDataType)))
+				
             {
 				await DatabaseConnection.EnableWriteAheadLoggingAsync().ConfigureAwait(false);
 				await DatabaseConnection.CreateTablesAsync(CreateFlags.None, typeof(TDataType)).ConfigureAwait(false);
+				
+				
 			}				
 
 			return await Policy.Handle<Exception>().WaitAndRetryAsync(numRetries, pollyRetryAttempt).ExecuteAsync(() => action(DatabaseConnection)).ConfigureAwait(false);
